@@ -1,0 +1,31 @@
+KVKK AYDINLATMA METNİ
+
+1. Veri Sorumlusu
+Bu aydınlatma metni, Akademi Platformu ("Platform") tarafından, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında, kullanıcılarımızın kişisel verilerinin işlenmesine ilişkin usul ve esasları belirlemek amacıyla hazırlanmıştır.
+
+2. İşlenen Kişisel Veriler
+Platformumuza üye olmanız durumunda aşağıdaki kişisel verileriniz işlenmektedir:
+- Kimlik Bilgileri: Kullanıcı adı (Takma ad olabilir).
+- İletişim Bilgileri: (Varsa) E-posta adresi (Şu an zorunlu değil).
+- İşlem Güvenliği Bilgileri: IP adresi, log kayıtları, parola bilgileri.
+- Kullanıcı İşlem Bilgileri: Paylaşılan gönderiler, yorumlar, oylamalar.
+
+3. Kişisel Verilerin İşlenme Amacı
+Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:
+- Üyelik işlemlerinin gerçekleştirilmesi.
+- Platform güvenliğinin sağlanması.
+- Yasal yükümlülüklerin yerine getirilmesi.
+- Platform içi etkileşimin sağlanması.
+
+4. Kişisel Verilerin Aktarılması
+Kişisel verileriniz, yasal zorunluluklar haricinde üçüncü kişilerle paylaşılmamaktadır. Ancak, yetkili kamu kurum ve kuruluşlarının talebi halinde verileriniz ilgili mercilerle paylaşılabilir.
+
+5. Haklarınız
+KVKK’nın 11. maddesi uyarınca veri sahibi olarak;
+- Kişisel verilerinizin işlenip işlenmediğini öğrenme,
+- İşlenmişse buna ilişkin bilgi talep etme,
+- İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme,
+- Yurt içinde veya yurt dışında aktarıldığı 3. kişileri bilme,
+- Eksik veya yanlış işlenen verilerin düzeltilmesini isteme haklarına sahipsiniz.
+
+Bu metni onaylayarak Platform kurallarını kabul etmiş sayılırsınız.

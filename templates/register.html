@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Yeni Hesap Oluştur</h1>
+        <p>Akademik bilgi paylaşım platformuna katıl.</p>
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="input-group">
+                <i class="fas fa-user-plus"></i>
+                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-university"></i>
+                <input type="text" name="university" placeholder="Üniversite (İsteğe Bağlı)">
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-info-circle"></i>
+                <textarea name="bio" placeholder="Hesap Açıklaması (Kendinden bahset)" rows="3"></textarea>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Şifre" required>
+            </div>
+
+            <div class="kvkk-check">
+                <input type="checkbox" id="kvkk" name="kvkk_check" required>
+                <label for="kvkk">KVKK Aydınlatma Metnini okudum ve onaylıyorum.</label>
+                <a href="#" onclick="openModal('kvkkModal')" class="kvkk-link"> (Metni Oku)</a>
+            </div>
+
+            <button type="submit" class="auth-btn">Kayıt Ol</button>
+        </form>
+        <p class="auth-switch">Zaten hesabın var mı? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
+    </div>
+</div>
+
+<!-- KVKK Modal -->
+<div id="kvkkModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('kvkkModal')">&times;</span>
+        <h2>KVKK Aydınlatma Metni</h2>
+        <div class="kvkk-text-content">
+            <pre>{{ kvkk_text }}</pre>
+        </div>
+        <button class="btn-primary" onclick="closeModal('kvkkModal')">Okudum, Anladım</button>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = "flex";
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    // Close modal if clicked outside
+    window.onclick = function (event) {
+        var modal = document.getElementById('kvkkModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

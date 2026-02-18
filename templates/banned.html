@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="text-align: center; margin-top: 100px;">
+    <h1 style="color: #ef4444; font-size: 3rem; margin-bottom: 20px;">HESABINIZ ASKIYA ALINDI</h1>
+    <div
+        style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 20px; border-radius: 10px; display: inline-block; max-width: 600px;">
+        <p style="font-size: 1.5rem;">Bu platformdan uzaklaştırıldınız.</p>
+        <p><strong>Sebep:</strong> {{ user.ban_reason or 'Belirtilmedi' }}</p>
+        {% if user.ban_expires_at %}
+        <p><strong>Bitiş Tarihi:</strong> {{ user.ban_expires_at.strftime('%d.%m.%Y %H:%M') }}</p>
+        {% else %}
+        <p><strong>Süre:</strong> Süresiz</p>
+        {% endif %}
+
+        <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+            <h3>Ban İtirazı / Açıklama</h3>
+            {% if user.ban_appeal_reason %}
+            <div class="alert alert-info">İtirazınız gönderildi ({{ user.ban_appeal_reason[:50] }}...). Yönetici
+                incelemesini bekleyin.</div>
+            {% else %}
+            <p>Eğer bir hata olduğunu düşünüyorsanız aşağıdan talep oluşturabilirsiniz.</p>
+            <form method="POST">
+                <textarea name="appeal" rows="4" class="form-control"
+                    placeholder="Neden banınız açılmalı? Açıklayınız..." required
+                    style="width: 100%; margin-bottom: 1rem;"></textarea>
+                <button type="submit" class="btn btn-primary">İtiraz Gönder</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

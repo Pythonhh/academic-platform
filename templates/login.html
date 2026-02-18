@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Giriş Yap</h1>
+        <p>Hesabına eriş ve tartışmaya katıl.</p>
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Şifre" required>
+            </div>
+
+            <button type="submit" class="auth-btn">Giriş Yap</button>
+        </form>
+        <p class="auth-switch">Hesabın yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="create-post-container">
+    <div class="create-header">
+        <h1>Yeni Bir Başarı veya Deneyim Paylaş</h1>
+        <p>Akademik yolculuğunda yaşadıklarını veya öğrenmek istediklerini burada anlat.</p>
+    </div>
+    <form action="{{ url_for('create_post') }}" method="POST" class="create-form">
+        <label for="title">Konu Başlığı</label>
+        <input type="text" id="title" name="title" required
+            placeholder="Örn: Mühendislik 1. Sınıfta Karşılaştığım Zorluklar">
+
+        <label for="content">Detaylar</label>
+        <textarea id="content" name="content" rows="10" required placeholder="Detayları buraya yaz..."></textarea>
+
+        <label for="category">Kategori</label>
+        <select id="category" name="category" required>
+            <option value="" disabled selected>Seçiniz</option>
+            <option value="experience">Akademik Deneyim</option>
+            <option value="question">Soru & Cevap</option>
+            <option value="advice">Tavsiye</option>
+            <option value="general">Genel / Diğer</option>
+        </select>
+
+        <p class="hint"><i class="fas fa-info-circle"></i> Not: Akademik Gerçeklik Puanı ve Etiketler, gönderiniz
+            yayınlandıktan sonra topluluk tarafından oylanarak belirlenecektir.</p>
+
+        <button type="submit" class="btn-primary-large">Paylaş</button>
+    </form>
+</div>
+{% endblock %}

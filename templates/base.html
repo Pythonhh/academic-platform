@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akademi Platformu - Yeni Nesil Üniversite Forumu</title>
+    <meta name="description"
+        content="Üniversite ve akademik kariyer hakkında gerçek deneyimler, tavsiyeler ve tartışmalar.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="{{ url_for('index') }}" class="logo">
+                Akademi<span>Net</span>
+            </a>
+
+            <div class="search-bar">
+                <form action="{{ url_for('index') }}" method="GET">
+                    <input type="text" name="q" placeholder="Konu, içerik veya üniversite ara..."
+                        value="{{ request.args.get('q', '') }}">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Ana Sayfa</a></li>
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('create_post') }}" class="btn-primary"><i class="fas fa-plus"></i> Konu Aç</a>
+                </li>
+
+                <li class="dropdown">
+                    <span class="user-greeting" style="cursor: pointer;">
+                        Merhaba, {{ current_user.username }} <i class="fas fa-caret-down"></i>
+                    </span>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('profile') }}"><i class="fas fa-user-circle"></i> Profilim</a>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_reports') }}"><i class="fas fa-shield-alt"></i> Yönetim</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Çıkış</a>
+                    </div>
+                </li>
+
+                {% else %}
+                <li><a href="{{ url_for('login') }}" class="btn-secondary">Giriş Yap</a></li>
+                <li><a href="{{ url_for('register') }}" class="btn-primary">Kayıt Ol</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Messages (Fixed Top) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert {{ category }}">
+            {% if 'error' in category %}
+            <i class="fas fa-exclamation-circle"></i>
+            {% elif 'success' in category %}
+            <i class="fas fa-check-circle"></i>
+            {% else %}
+            <i class="fas fa-info-circle"></i>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="main-content container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 AkademiNet. Tüm hakları saklıdır. KVKK ve Kullanım Şartları.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple Dropdown Toggle
+        document.querySelector('.user-greeting')?.addEventListener('click', function (e) {
+            e.preventDefault();
+            this.nextElementSibling.classList.toggle('show');
+        });
+
+        window.onclick = function (event) {
+            if (!event.target.matches('.user-greeting') && !event.target.matches('.user-greeting *')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

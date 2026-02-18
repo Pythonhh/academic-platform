@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container fade-in" style="padding-top: 2rem;">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if user.profile_image and user.profile_image != 'default.png' %}
+            <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" alt="Avatar"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            {% else %}
+            {{ user.username[0].upper() }}
+            {% endif %}
+        </div>
+        <h1 style="margin-bottom: 0.5rem; font-size: 2.5rem;">{{ user.username }}</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;">
+            <i class="fas fa-university" style="margin-right: 8px;"></i>
+            {{ user.university or 'Üniversite bilgisi eklenmemiş' }}
+        </p>
+
+        {% if user.bio %}
+        <div style="max-width: 600px; margin: 0 auto; color: #cbd5e1; font-style: italic;">
+            "{{ user.bio }}"
+        </div>
+        {% endif %}
+
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ user.posts|length }}</div>
+                <div class="stat-label">Konu</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ user.comments|length }}</div>
+                <div class="stat-label">Yorum</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ user.created_at.strftime('%Y') }}</div>
+                <div class="stat-label">Katılım Yılı</div>
+            </div>
+        </div>
+
+        {% if user.id == current_user.id %}
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            <button onclick="openModal('editProfileModal')" class="btn btn-secondary">
+                <i class="fas fa-edit"></i> Profili Düzenle
+            </button>
+            <button onclick="openModal('deleteAccountModal')" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i> Hesabı Sil
+            </button>
+        </div>
+        {% elif current_user.is_admin %}
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            <button onclick="openModal('banUserModal')" class="btn btn-danger">
+                <i class="fas fa-ban"></i> Kullanıcıyı Yasakla
+            </button>
+        </div>
+        {% else %}
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            <button onclick="openModal('reportUserModal')" class="btn btn-danger"
+                style="background-color: transparent; border: 1px solid var(--danger); color: var(--danger);">
+                <i class="fas fa-flag"></i> Şikayet Et
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tabs -->
+    <div class="profile-tabs">
+        <button class="tab-btn active" onclick="switchTab('posts')">Konularım</button>
+        <button class="tab-btn" onclick="switchTab('comments')">Yorumlarım</button>
+    </div>
+
+    <!-- Content Sections -->
+    <div id="posts-tab" class="tab-content">
+        {% if user.posts %}
+        <div class="posts-grid">
+            {% for post in user.posts %}
+            <a href="{{ url_for('view_post', post_id=post.id) }}" class="post-card">
+                <div class="post-header-compact">
+                    <div class="header-left">
+                        <span class="category-badge">{{ post.category_label }}</span>
+                        <span class="post-date">{{ post.created_at.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                </div>
+
+                <h3 class="post-title-compact" style="font-size: 1rem;">{{ post.title }}</h3>
+
+                <div class="post-footer-compact">
+                    <div class="interactions-mini">
+                        <span><i class="fas fa-eye"></i> {{ post.view_count }}</span>
+                        <span><i class="fas fa-comment"></i> {{ post.comments|length }}</span>
+                        <span class="{{ 'text-success' if post.score > 0 else '' }}">
+                            <i class="fas fa-chevron-up"></i> {{ post.score }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+            <i class="fas fa-pen-alt" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Henüz hiç konu açılmamış.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="comments-tab" class="tab-content" style="display: none;">
+        {% if user.comments %}
+        <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 800px; margin: 0 auto;">
+            {% for comment in user.comments %}
+            <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--primary);">
+                <div
+                    style="margin-bottom: 0.8rem; font-size: 0.9rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span>
+                        <a href="{{ url_for('view_post', post_id=comment.post.id) }}"
+                            style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                            {{ comment.post.title }}
+                        </a>
+                        konusuna yorum yaptı:
+                    </span>
+                    <span>{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+                <p style="color: var(--text-main); font-size: 1rem;">{{ comment.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+            <i class="fas fa-comment-slash" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Henüz hiç yorum yapılmamış.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Ban User Modal (Only for Admin) -->
+{% if current_user.is_admin %}
+<div id="banUserModal" class="modal-overlay">
+    <div class="modal-content" style="border-color: var(--danger);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--danger);"><i class="fas fa-ban"></i> Kullanıcıyı Yasakla</h2>
+            <button onclick="closeModal('banUserModal')"
+                style="background:none; border:none; color:white; font-size: 1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form action="{{ url_for('ban_user', user_id=user.id) }}" method="POST">
+            <div class="input-group">
+                <label class="input-label">Yasaklama Sebebi</label>
+                <input type="text" name="reason" class="form-control" required placeholder="Örn: Spam, Küfür vb.">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Süre (Gün)</label>
+                <input type="number" name="duration" class="form-control" value="30" min="1">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <button type="button" onclick="closeModal('banUserModal')" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-danger">Yasakla</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Profili Düzenle</h2>
+            <button onclick="closeModal('editProfileModal')"
+                style="background:none; border:none; color:white; font-size: 1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <div class="profile-upload-preview" style="text-align: center; margin-bottom: 1rem;">
+                    <div
+                        style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        {% if user.profile_image and user.profile_image != 'default.png' %}
+                        <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-camera" style="font-size: 2rem; color: var(--text-muted);"></i>
+                        {% endif %}
+                    </div>
+                    <label class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">
+                        <i class="fas fa-upload"></i> Fotoğraf Yükle
+                        <input type="file" name="profile_image" accept="image/*" style="display: none;"
+                            onchange="previewImage(this)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Kullanıcı Adı</label>
+                <input type="text" name="username" value="{{ user.username }}" class="form-control" readonly
+                    style="opacity: 0.7; cursor: not-allowed;">
+                <small style="color: var(--text-muted);">Kullanıcı adı değiştirilemez.</small>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Üniversite / Bölüm</label>
+                <input type="text" name="university" value="{{ user.university or '' }}" class="form-control"
+                    placeholder="Örn: ODTÜ - Bilgisayar Müh.">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Hakkımda</label>
+                <textarea name="bio" rows="3" class="form-control"
+                    placeholder="Kendinden kısaca bahset...">{{ user.bio or '' }}</textarea>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Yeni Şifre (İsteğe Bağlı)</label>
+                <input type="password" name="password" class="form-control"
+                    placeholder="Değiştirmek istemiyorsan boş bırak">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" onclick="closeModal('editProfileModal')" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" class="modal-overlay">
+    <div class="modal-content" style="border-color: var(--danger);">
+        <div style="text-align: center;">
+            <i class="fas fa-exclamation-triangle"
+                style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+            <h2 style="color: var(--danger); margin-bottom: 1rem;">Hesabını silmek üzeresin!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                Bu işlem geri alınamaz. Tüm konuların, yorumların ve verilerin kalıcı olarak silinecektir. Emin misin?
+            </p>
+
+            <form action="{{ url_for('delete_account') }}" method="POST">
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button type="button" onclick="closeModal('deleteAccountModal')"
+                        class="btn btn-secondary">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">Evet, Hesabımı Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Report User Modal -->
+<div id="reportUserModal" class="modal-overlay">
+    <div class="modal-content" style="border-color: var(--danger);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--danger);"><i class="fas fa-flag"></i> Kullanıcıyı Şikayet Et</h2>
+            <button onclick="closeModal('reportUserModal')"
+                style="background:none; border:none; color:white; font-size: 1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form action="{{ url_for('report_user', user_id=user.id) }}" method="POST">
+            <div class="input-group">
+                <label class="input-label">Şikayet Sebebi</label>
+                <select name="reason" class="form-control" required
+                    style="background-color: var(--bg-dark); color: white;">
+                    <option value="" disabled selected>Bir sebep seçin...</option>
+                    <option value="spam">Spam / Reklam</option>
+                    <option value="harassment">Taciz / Hakaret</option>
+                    <option value="inappropriate">Uygunsuz İçerik</option>
+                    <option value="fake">Sahte Hesap</option>
+                    <option value="other">Diğer</option>
+                </select>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Bu bildirim site yönetimine iletilecektir. Haksız şikayetler, şikayet eden hesabın kısıtlanmasına yol
+                açabilir.
+            </p>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" onclick="closeModal('reportUserModal')" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-danger">Şikayet Et</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName) {
+        // Toggle Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Toggle Content
+        document.getElementById('posts-tab').style.display = tabName === 'posts' ? 'block' : 'none';
+        document.getElementById('comments-tab').style.display = tabName === 'comments' ? 'block' : 'none';
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    // Close on outside click
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                // Find the preview container and update/create img
+                // For simplicity, let's just show file name or rely on user saving
+                // Or implementing a complex preview logic.
+                // Given the constraints, let's just assume the user knows it's selected.
+                // Or better:
+                let previewDiv = input.parentElement.previousElementSibling;
+                previewDiv.innerHTML = '<img src="' + e.target.result + '" style="width: 100%; height: 100%; object-fit: cover;">';
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

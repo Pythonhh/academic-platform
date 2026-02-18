@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container fade-in" style="padding-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1><i class="fas fa-user-shield" style="color: var(--primary);"></i> Yönetim Paneli - Şikayetler</h1>
+    </div>
+
+    {% if reports %}
+    <div class="row">
+        {% for report in reports %}
+        <div class="col-md-12" style="margin-bottom: 1rem;">
+            <div class="card" style="border-left: 4px solid var(--danger);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--danger);">
+                            <i class="fas fa-exclamation-circle"></i> {{ report.reason }}
+                        </h3>
+                        <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                            <strong>Şikayet Eden:</strong> <a
+                                href="{{ url_for('view_profile', username=report.reporter.username) }}"
+                                style="color: var(--primary);">{{ report.reporter.username }}</a>
+                            <span style="margin: 0 0.5rem;">&bull;</span>
+                            {{ report.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </p>
+                        <p style="font-size: 1.1rem;">
+                            <strong>Şikayet Edilen:</strong>
+                            <a href="{{ url_for('view_profile', username=report.reported_user.username) }}"
+                                style="color: white; font-weight: bold; background-color: var(--bg-dark); padding: 0.2rem 0.5rem; border-radius: 4px;">{{
+                                report.reported_user.username }}</a>
+                        </p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                        <!-- Resolve Button -->
+                        <a href="{{ url_for('resolve_report', report_id=report.id) }}" class="btn btn-secondary"
+                            style="font-size: 0.9rem;">
+                            <i class="fas fa-check"></i> Çözüldü/Yoksay
+                        </a>
+
+                        <!-- Ban Button (Trigger Modal) -->
+                        <button
+                            onclick="openBanModal('{{ report.reported_user.id }}', '{{ report.reported_user.username }}')"
+                            class="btn btn-danger">
+                            <i class="fas fa-ban"></i> Kullanıcıyı Banla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem; color: var(--success);"></i>
+        <h3>Her şey yolunda!</h3>
+        <p>Şu an incelenmesi gereken şikayet yok.</p>
+    </div>
+    {% endif %}
+
+    <!-- Appeals Section -->
+    <h2 style="margin-top: 3rem; margin-bottom: 1.5rem;"><i class="fas fa-bullhorn" style="color: var(--accent);"></i>
+        Ban İtirazları (Talepler)</h2>
+
+    {% set appeals = banned_users | selectattr('ban_appeal_reason') | list %}
+    {% if appeals %}
+    <div class="row">
+        {% for user in appeals %}
+        <div class="col-md-12" style="margin-bottom: 1rem;">
+            <div class="card"
+                style="border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; color: var(--accent);">
+                        <i class="fas fa-user-lock"></i> {{ user.username }}
+                    </h3>
+                    <p><strong>Ban Sebebi:</strong> {{ user.ban_reason }}</p>
+                    <div class="alert alert-info" style="margin-top: 0.5rem; background: rgba(59, 130, 246, 0.1);">
+                        <strong>Kullanıcı Savunması:</strong>
+                        <p style="margin-bottom: 0; font-style: italic;">"{{ user.ban_appeal_reason }}"</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                    <form action="{{ url_for('unban_user', user_id=user.id) }}" method="POST"
+                        onsubmit="return confirm('Bu talebi kabul edip yasağı kaldırmak istiyor musunuz?');">
+                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                            <i class="fas fa-check"></i> Talebi Onayla (Ban aç)
+                        </button>
+                    </form>
+                    <!-- Maybe a reject button? For now just ignore creates "pending" state. Or clear appeal reason to reject. -->
+                    <form action="{{ url_for('reject_appeal', user_id=user.id) }}" method="POST"
+                        onsubmit="return confirm('Talebi reddetmek istediğinize emin misiniz?');">
+                        <button type="submit" class="btn btn-secondary"
+                            style="width: 100%; border-color: var(--danger); color: var(--danger);">
+                            <i class="fas fa-times"></i> Reddet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">Bekleyen ban itirazı yok.</p>
+    {% endif %}
+
+    <!-- All Banned Users Section -->
+    <h2 style="margin-top: 3rem; margin-bottom: 1.5rem;"><i class="fas fa-ban" style="color: var(--danger);"></i> Tüm
+        Yasaklı Kullanıcılar</h2>
+
+    {% set others = banned_users | rejectattr('ban_appeal_reason') | list %}
+    {% if others %}
+    <div class="row">
+        {% for user in others %}
+        <div class="col-md-6" style="margin-bottom: 1rem;">
+            <div class="card" style="border-left: 4px solid var(--text-muted); padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin-bottom: 0.2rem; color: var(--text-muted);">{{ user.username }}</h4>
+                        <small>Sebep: {{ user.ban_reason }}</small><br>
+                        <small>Bitiş: {{ user.ban_expires_at.strftime('%d.%m.%Y') if user.ban_expires_at else 'Süresiz'
+                            }}</small>
+                    </div>
+                    <form action="{{ url_for('unban_user', user_id=user.id) }}" method="POST"
+                        onsubmit="return confirm('Yasağı kaldırmak istediğinize emin misiniz?');">
+                        <button type="submit" class="btn-delete"
+                            style="color: var(--success); border-color: var(--success);">
+                            <i class="fas fa-unlock"></i> Aç
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">Başka yasaklı kullanıcı yok.</p>
+    {% endif %}
+</div>
+
+<!-- Ban User Modal -->
+<div id="banUserModal" class="modal-overlay">
+    <div class="modal-content" style="border-color: var(--danger);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--danger);"><i class="fas fa-gavel"></i> Kullanıcıyı Yasakla</h2>
+            <button onclick="closeBanModal()"
+                style="background:none; border:none; color:white; font-size: 1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <p style="margin-bottom: 1rem;">Banlanacak Kullanıcı: <strong id="banUsernameDisplay"></strong></p>
+
+        <form id="banForm" action="" method="POST">
+            <div class="input-group">
+                <label class="input-label">Ban Sebebi</label>
+                <input type="text" name="reason" class="form-control" placeholder="Örn: Topluluk kuralları ihlali"
+                    required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Süre</label>
+                <select name="duration" class="form-control" style="background-color: var(--bg-dark); color: white;">
+                    <option value="1_day">1 Gün</option>
+                    <option value="7_days">7 Gün</option>
+                    <option value="30_days">30 Gün</option>
+                    <option value="permanent">Kalıcı (Sınırsız)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <button type="button" onclick="closeBanModal()" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-danger">Banla</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openBanModal(userId, username) {
+        document.getElementById('banUsernameDisplay').innerText = username;
+        document.getElementById('banForm').action = "/ban/" + userId;
+        document.getElementById('banUserModal').classList.add('open');
+    }
+
+    function closeBanModal() {
+        document.getElementById('banUserModal').classList.remove('open');
+    }
+
+    // Close on outside click is handled in profile.html script mostly, but let's add it here too just in case
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}

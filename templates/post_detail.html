@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="post-detail-container">
+    <div class="post-layout-grid">
+        <div class="post-main-column">
+            <div class="post-content-card">
+                <div class="vote-section">
+                    <!-- Vote Section (Horizontal for cleaner look?) Or Keep absolute side? -->
+                    <!-- Let's keep it minimal inside header or separate -->
+                </div>
+
+                <div class="main-body">
+                    <!-- Header Info (New Design) -->
+                    <div class="post-detail-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <div class="author-info" style="display: flex; gap: 1rem; align-items: center;">
+                            <div class="profile-avatar-small">
+                                {% if post.author.profile_image and post.author.profile_image != 'default.png' %}
+                                <img src="{{ url_for('static', filename='uploads/' + post.author.profile_image) }}"
+                                    alt="Avatar">
+                                {% else %}
+                                {{ post.author.username[0].upper() }}
+                                {% endif %}
+                            </div>
+                            <div class="author-meta" style="display: flex; flex-direction: column;">
+                                <a href="{{ url_for('view_profile', username=post.author.username) }}"
+                                    class="author-link" style="font-weight: bold; font-size: 1.1rem; color: white;">{{
+                                    post.author.username }}</a>
+                                <span class="uni-info" style="font-size: 0.9rem; color: var(--text-muted);">{{
+                                    post.author.university or 'Belirtilmemiş' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="post-actions" style="display: flex; align-items: center; gap: 1rem;">
+                            <span class="date"
+                                style="color: var(--text-muted); font-size: 0.9rem; white-space: nowrap;">
+                                <i class="far fa-clock"></i> {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </span>
+
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                {% if current_user.is_authenticated and (current_user.id == post.author.id or
+                                current_user.is_admin) %}
+                                <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST"
+                                    onsubmit="return confirm('Bu gönderiyi silmek istediğine emin misin?');"
+                                    style="margin: 0;">
+                                    <button type="submit" class="btn-delete" title="Sil"
+                                        style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if current_user.is_authenticated and current_user.id != post.author.id %}
+                                <button onclick="openModal('reportPostModal')" class="action-btn" title="Şikayet Et"
+                                    style="background: none; border: none; color: var(--text-muted); cursor: pointer; transition: color 0.2s;">
+                                    <i class="fas fa-flag"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <span class="category-badge" style="display: inline-block; margin-bottom: 0.5rem;">{{
+                            post.category_label
+                            }}</span>
+                        <h1 class="detail-title" style="margin-top: 0.5rem; text-align: center;">{{ post.title }}</h1>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="content-text"
+                        style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8; text-align: left; padding: 0;">
+                        {{ post.content }}
+                    </div>
+                </div>
+
+                <div class="vote-actions"
+                    style="border-top: 1px solid var(--border-color); margin-top: 2rem; padding-top: 1rem; display: flex; gap: 1.5rem;">
+                    <a href="{{ url_for('vote_post', post_id=post.id, action='up') }}"
+                        class="vote-mini {{ 'positive' if user_votes.get('main_vote') == 1 else '' }}"
+                        style="text-decoration:none; color: var(--text-muted);">
+                        <i class="fas fa-thumbs-up"></i> {{ post.like_count }} Beğen
+                    </a>
+                    <a href="{{ url_for('vote_post', post_id=post.id, action='down') }}"
+                        class="vote-mini {{ 'text-danger' if user_votes.get('main_vote') == -1 else '' }}"
+                        style="text-decoration:none; color: var(--text-muted);">
+                        <i class="fas fa-thumbs-down"></i> {{ post.dislike_count }}
+                    </a>
+                    <span style="color: var(--text-muted); margin-left: auto;">
+                        <i class="fas fa-eye"></i> {{ post.view_count }} Görüntülenme
+                    </span>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section" id="comments">
+                <div class="post-content-card">
+                    <h3 style="margin-bottom: 1.5rem;"><i class="far fa-comments"></i> Yorumlar ({{ comments|length }})
+                    </h3>
+
+                    {% if current_user.is_authenticated %}
+                    <form action="{{ url_for('add_comment', post_id=post.id) }}" method="POST" class="comment-form">
+                        <div class="input-group">
+                            <textarea name="content" rows="3"
+                                placeholder="Bu konuda ne düşünüyorsun {{ current_user.username }}? Deneyimlerini paylaş..."
+                                required
+                                style="min-height: 80px; width: 100%; box-sizing: border-box; background: var(--bg-dark); color: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;"></textarea>
+                        </div>
+                        <div style="text-align: right; margin-top: 0.5rem;">
+                            <button type="submit" class="btn-primary">Yorumu Gönder</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert gray-error" style="text-align: center;">
+                        Yorum yapmak için <a href="{{ url_for('login') }}"
+                            style="color: var(--primary); font-weight: bold;">giriş yapmalısınız.</a>
+                    </div>
+                    {% endif %}
+
+                    <div class="comment-list" style="margin-top: 2rem;">
+                        {% macro render_comment(comment, depth=0) %}
+                        <div class="comment-card fade-in" style="margin-bottom: 1rem;">
+                            <!-- Delete Comment Button -->
+                            {% if current_user.is_authenticated and (current_user.id == comment.author.id or
+                            current_user.is_admin) %}
+                            <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST"
+                                onsubmit="return confirm('Bu yorumu silmek istediğine emin misin?');"
+                                style="position: absolute; top: 1rem; right: 1rem;">
+                                <button type="submit"
+                                    style="background:none; border:none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;"
+                                    title="Yorumu Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <div class="comment-header">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="profile-avatar-xs">
+                                        {% if comment.author.profile_image and comment.author.profile_image !=
+                                        'default.png' %}
+                                        <img src="{{ url_for('static', filename='uploads/' + comment.author.profile_image) }}"
+                                            alt="Avatar">
+                                        {% else %}
+                                        {{ comment.author.username[0].upper() }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong style="color: var(--text-main);">
+                                            <a href="{{ url_for('view_profile', username=comment.author.username) }}"
+                                                style="color: inherit; text-decoration: none;">{{
+                                                comment.author.username }}</a>
+                                        </strong>
+                                        {% if comment.parent %}
+                                        <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 5px;">
+                                            <i class="fas fa-reply" style="font-size: 0.7rem;"></i> {{
+                                            comment.parent.author.username }}'a yanıt
+                                        </span>
+                                        {% endif %}
+                                        {% if comment.author.university %}
+                                        <span style="font-size: 0.8rem; color: var(--text-muted);"> • {{
+                                            comment.author.university }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <small class="text-muted" style="margin-right: 2rem;">{{ comment.created_at |
+                                    turkish_time }}</small>
+                            </div>
+                            <div class="comment-body" style="margin-top: 0.8rem; color: #e2e8f0; line-height: 1.6;">
+                                {{ comment.content }}
+                            </div>
+
+                            <!-- Actions: Reply -->
+                            <div style="margin-top: 0.5rem;">
+                                <button onclick="toggleReply('reply-form-{{ comment.id }}')"
+                                    style="background:none; border:none; color: var(--primary); font-size: 0.85rem; cursor: pointer; padding: 0;">
+                                    <i class="fas fa-reply"></i> Yanıtla
+                                </button>
+
+                                <!-- Reply Form (Hidden) -->
+                                <div id="reply-form-{{ comment.id }}" style="display: none; margin-top: 1rem;">
+                                    {% if current_user.is_authenticated %}
+                                    <form action="{{ url_for('add_comment', post_id=post.id) }}" method="POST">
+                                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                        <textarea name="content" rows="2"
+                                            placeholder="@{{ comment.author.username }} kişisine yanıtın..." required
+                                            class="form-control"></textarea>
+                                        <div style="text-align: right; margin-top: 0.5rem;">
+                                            <button type="submit" class="btn btn-secondary"
+                                                style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Yanıt Gönder</button>
+                                        </div>
+                                    </form>
+                                    {% else %}
+                                    <a href="{{ url_for('login') }}"
+                                        style="font-size: 0.85rem; color: var(--text-muted);">Yanıtlamak için giriş
+                                        yapın.</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Recursive Replies -->
+                            {% if comment.replies %}
+                            <div class="replies-container"
+                                style="{{ 'margin-left: 2rem;' if depth < 1 else 'margin-left: 0;' }}">
+                                {% for reply in comment.replies if not reply.author.is_banned %}
+                                {{ render_comment(reply, depth + 1) }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endmacro %}
+
+                        {% for comment in comments %}
+                        {{ render_comment(comment, 0) }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar (Evaluation) -->
+        <div class="post-sidebar">
+            <!-- Community Evaluation Card -->
+            <div class="evaluation-card">
+                <h3><i class="fas fa-chart-bar" style="color: var(--primary);"></i> Topluluk Değerlendirmesi</h3>
+
+                <div class="eval-grid">
+                    <!-- Academic Reality -->
+                    <div class="eval-item">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-muted);">Akademik
+                            Gerçeklik</label>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
+                            {{ post.realism_average }}/10
+                        </div>
+
+                        {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('vote_academic', post_id=post.id, vtype='realism_score') }}"
+                            method="POST"
+                            style="display: flex; gap: 0.5rem; align-items: center; justify-content: center;">
+                            <input type="range" name="value" min="1" max="10"
+                                value="{{ user_votes.get('realism_score', 5) }}"
+                                oninput="this.nextElementSibling.value = this.value" style="width: 100px;">
+                            <output style="font-weight: bold; width: 25px;">{{ user_votes.get('realism_score', 5)
+                                }}</output>
+                            <button type="submit" class="btn-primary"
+                                style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">Oyla</button>
+                        </form>
+                        {% else %}
+                        <small style="color: var(--text-muted);">Oy vermek için giriş yapın.</small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Experience Check -->
+                    <div class="eval-item">
+                        <div style="font-size: 1.5rem; color: var(--success); margin-bottom: 0.5rem;">
+                            <i class="fas fa-check-circle"></i> {{ post.experience_count }}
+                        </div>
+                        <label style="color: var(--text-muted);">Bizzat Yaşandı Onayı</label>
+
+                        {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('vote_academic', post_id=post.id, vtype='is_experience') }}"
+                            method="POST">
+                            <button type="submit"
+                                class="eval-btn {{ 'active' if user_votes.get('is_experience') else '' }}">
+                                <i class="fas fa-hand-paper"></i> Ben de Yaşadım
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+
+                    <!-- Wish I Knew Check -->
+                    <div class="eval-item">
+                        <div style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem;">
+                            <i class="fas fa-lightbulb"></i> {{ post.wish_knew_count }}
+                        </div>
+                        <label style="color: var(--text-muted);">Önemli Bilgi</label>
+
+                        {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('vote_academic', post_id=post.id, vtype='is_wish_knew') }}"
+                            method="POST">
+                            <button type="submit"
+                                class="eval-btn {{ 'active' if user_votes.get('is_wish_knew') else '' }}">
+                                <i class="fas fa-star"></i> Keşke Bilseydim
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Actions -->
+    {% if current_user.is_admin and not post.author.is_admin %}
+    <div class="admin-actions" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px dashed var(--danger);">
+        <h4 style="color: var(--danger); margin-bottom: 1rem;">Admin İşlemleri</h4>
+        <form action="{{ url_for('ban_user', user_id=post.author.id) }}" method="POST"
+            style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <input type="text" name="reason" placeholder="Ban Sebebi (Küfür vb.)" required class="form-control"
+                style="flex:1;">
+            <select name="duration" class="form-control" style="width: auto;">
+                <option value="1_day">1 Gün</option>
+                <option value="7_days">1 Hafta</option>
+                <option value="30_days">1 Ay</option>
+                <option value="permanent">Süresiz</option>
+            </select>
+            <button type="submit" class="btn-danger">Kullanıcıyı Banla</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Report Post Modal -->
+<div id="reportPostModal" class="modal-overlay">
+    <div class="modal-content" style="border-color: var(--danger);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--danger);"><i class="fas fa-flag"></i> Gönderiyi Şikayet Et</h2>
+            <button onclick="closeModal('reportPostModal')"
+                style="background:none; border:none; color:white; font-size: 1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form action="{{ url_for('report_post', post_id=post.id) }}" method="POST">
+            <div class="input-group">
+                <label class="input-label">Şikayet Sebebi</label>
+                <select name="reason" class="form-control" required
+                    style="background-color: var(--bg-dark); color: white;">
+                    <option value="" disabled selected>Bir sebep seçin...</option>
+                    <option value="spam">Spam / Reklam</option>
+                    <option value="harassment">Hakaret / Taciz</option>
+                    <option value="inappropriate">Uygunsuz İçerik</option>
+                    <option value="false_info">Yanıltıcı Bilgi</option>
+                    <option value="other">Diğer</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                <button type="button" onclick="closeModal('reportPostModal')" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-danger">Şikayet Et</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function toggleReply(id) {
+        var el = document.getElementById(id);
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    // Close on outside click is already in base.html script mostly or we add here
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}
