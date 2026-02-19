@@ -929,6 +929,8 @@ a {
         border-radius: 12px;
         margin-top: 0.5rem;
         border: 1px solid var(--border-color);
+        padding-top: 4rem;
+        /* Additional padding for mobile */
     }
 
     .nav-links.active {
@@ -1786,6 +1788,11 @@ footer.footer {
     }
 
     /* Fix Dropdowns on Mobile */
+    .dropdown {
+        width: 100%;
+        text-align: center;
+    }
+
     .dropdown-content {
         position: static !important;
         width: 100%;
@@ -1794,17 +1801,25 @@ footer.footer {
         margin-top: 0.5rem;
         border: none;
         display: none;
+        /* Explicitly hidden until toggled */
+        opacity: 0;
+        transition: opacity 0.3s, display 0.3s allow-discrete;
     }
 
     .dropdown:hover .dropdown-content {
-        display: none !important;
+        display: none;
         /* Disable hover on mobile */
     }
 
+    /* The .show class is added by JS */
     .dropdown-content.show {
         display: block !important;
-        /* Force show on click */
-        animation: fadeIn 0.3s;
+        opacity: 1;
+        animation: none;
+        /* Remove complex animation that might hide it */
+        position: relative !important;
+        /* Ensure it takes up space in flow */
+        z-index: 1500;
     }
 
     /* Ensure Greeting is clickable */
