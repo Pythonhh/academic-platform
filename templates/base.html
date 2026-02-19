@@ -19,6 +19,12 @@
                 Akademi<span>Net</span>
             </a>
 
+            <div class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
             <div class="search-bar">
                 <form action="{{ url_for('index') }}" method="GET">
                     <input type="text" name="q" placeholder="Konu, içerik veya üniversite ara..."
@@ -85,6 +91,17 @@
     </footer>
 
     <script>
+        // Use a more robust way to handle mobile menu
+        const menuToggle = document.getElementById('mobile-menu');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('active');
+                this.classList.toggle('is-active');
+            });
+        }
+
         // Simple Dropdown Toggle
         document.querySelector('.user-greeting')?.addEventListener('click', function (e) {
             e.preventDefault();
