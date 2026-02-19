@@ -1787,23 +1787,31 @@ footer.footer {
 
     /* Fix Dropdowns on Mobile */
     .dropdown-content {
-        position: static;
+        position: static !important;
         width: 100%;
         box-shadow: none;
         background: rgba(0, 0, 0, 0.2);
         margin-top: 0.5rem;
         border: none;
+        display: none;
     }
 
     .dropdown:hover .dropdown-content {
-        display: none;
+        display: none !important;
         /* Disable hover on mobile */
     }
 
     .dropdown-content.show {
-        display: block;
-        /* Only show on click */
+        display: block !important;
+        /* Force show on click */
         animation: fadeIn 0.3s;
+    }
+
+    /* Ensure Greeting is clickable */
+    .user-greeting {
+        padding: 0.5rem;
+        display: block;
+        width: 100%;
     }
 }
 
@@ -1828,5 +1836,35 @@ footer.footer {
     .col-md-6 {
         width: 100%;
         /* Stack on mobile */
+    }
+
+    /* Fix Navbar Overlap on Mobile */
+    .nav-container {
+        align-items: center;
+        /* Vertically center items */
+        min-height: 60px;
+        /* Ensure minimum height */
+    }
+
+    .logo {
+        flex: 1 1 auto;
+        /* Allow flexible width but don't shrink too much */
+        white-space: nowrap;
+        /* Prevent logo wrapping */
+        margin-right: 1rem;
+    }
+
+    .menu-toggle {
+        margin-left: auto;
+        /* Push to right */
+        flex-shrink: 0;
+    }
+
+    .search-bar {
+        margin-top: 1rem !important;
+        /* Force spacing */
+        flex-basis: 100%;
+        /* Force new line */
+        order: 3;
     }
 }

@@ -102,10 +102,20 @@
             });
         }
 
-        // Simple Dropdown Toggle
-        document.querySelector('.user-greeting')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            this.nextElementSibling.classList.toggle('show');
+        // Robust Dropdown Toggle
+        document.querySelectorAll('.user-greeting').forEach(trigger => {
+            trigger.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent closing immediately
+                const content = this.nextElementSibling;
+
+                // Close other open dropdowns first
+                document.querySelectorAll('.dropdown-content.show').forEach(d => {
+                    if (d !== content) d.classList.remove('show');
+                });
+
+                content.classList.toggle('show');
+            });
         });
 
         window.onclick = function (event) {
