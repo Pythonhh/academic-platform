@@ -8,3 +8,4 @@ SQLAlchemy==2.0.25
 Flask-WTF==1.2.2
 WTForms==3.2.1
 gunicorn
+pytz
